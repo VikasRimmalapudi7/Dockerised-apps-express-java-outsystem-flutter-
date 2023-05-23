@@ -1,0 +1,14 @@
+Launch an EC2 instance: Create a new EC2 instance on AWS and choose an appropriate operating system.
+
+Install required software: Once the instance is running, connect to it using SSH and install the required software, including Git, Flutter, and any other dependencies your app requires.
+
+Clone your app repository: Clone your Flutter web app repository into your EC2 instance.
+
+Build the app for web: Run flutter build web command in your terminal to generate a build directory in your project directory.
+
+Install a web server: Install a web server such as Apache or Nginx on your EC2 instance and configure it to serve your Flutter web app.
+
+Deploy the app: Copy the contents of the build directory to the appropriate location on the web server, and configure the server to serve the app.
+
+Test the app: Access the app URL in a web browser to verify that it is running correctly.
+

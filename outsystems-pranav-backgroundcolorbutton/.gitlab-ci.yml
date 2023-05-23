@@ -1,0 +1,28 @@
+image: node:latest
+
+stages:
+    - deploy
+
+deploy:
+    stage: deploy
+    image: ubuntu:latest
+    before_script:
+        - apt-get update
+        - apt-get install -y openssh-client
+        - apt-get install -y sudo
+        - apt-get install rsync -y
+
+    script:
+        - apt-get update
+        - apt-get install -y ssh
+        - echo "$SSH_PRIVATE_KEY" > ssh_key.pem
+        - chmod 400 ssh_key.pem
+        - ssh -o StrictHostKeyChecking=no -i ssh_key.pem $SSH_USER@$SSH_HOST "sudo apt-get update"
+        - ssh -o StrictHostKeyChecking=no -i ssh_key.pem $SSH_USER@$SSH_HOST "sudo apt-get install nginx -y"
+        - ssh -o StrictHostKeyChecking=no -i ssh_key.pem $SSH_USER@$SSH_HOST "sudo systemctl start nginx"
+        - ssh -o StrictHostKeyChecking=no -i ssh_key.pem $SSH_USER@$SSH_HOST "sudo chown -R $SSH_USER:$SSH_USER /var/www/html/ ; "
+        - rsync -e "ssh -i ssh_key.pem" --recursive --delete ./ $SSH_USER@$SSH_HOST:/var/www/html/
+
+    only:
+        - main
+

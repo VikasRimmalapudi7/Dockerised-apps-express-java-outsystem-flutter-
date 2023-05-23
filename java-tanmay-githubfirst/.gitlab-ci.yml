@@ -1,0 +1,28 @@
+image: java:latest
+
+stages:
+    - deploy
+
+deploy:
+    stage: deploy
+    image: ubuntu:latest
+    before_script:
+        - apt-get update
+        - apt-get install -y openssh-client
+        - apt-get install -y sudo
+        - apt-get install rsync -y
+
+    script:
+        - apt-get update
+        - apt-get install -y ssh
+        - echo "$SSH_PRIVATE_KEY" > ssh_key.pem
+        - chmod 400 ssh_key.pem
+        - ssh -o StrictHostKeyChecking=no -i ssh_key.pem $SSH_USER@$SSH_HOST "sudo apt-get update && sudo apt-get install -y tomcat9 && sudo apt-get install -y tomcat9-examples && sudo apt-get -y install openjdk-8-jdk && sudo chown -R $SSH_USER:$SSH_USER project/git_java/"
+        - sudo rsync -e "ssh -i ssh_key.pem" --recursive --delete ./ $SSH_USER@$SSH_HOST:./project/git_java/
+        - ssh -o StrictHostKeyChecking=no -i ssh_key.pem $SSH_USER@$SSH_HOST "cd project && sudo apt-get install -y maven && cd git_java && sudo mvn clean install && cd target && sudo cp GitHubFirst.war /var/lib/tomcat9/webapps"
+        - rm -f ssh_key.pem
+
+    only:
+        - master
+
+

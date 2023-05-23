@@ -1,0 +1,41 @@
+FROM httpd
+
+WORKDIR /app
+
+# Update the package lists and upgrade existing packages
+RUN apt-get update && apt-get upgrade -y
+
+# Install necessary packages
+RUN apt-get install -y git curl unzip libglu1-mesa xz-utils ca-certificates
+
+# Download and install Flutter SDK
+RUN curl -o flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.7.12-stable.tar.xz
+RUN tar xf flutter.tar.xz
+RUN mv flutter /usr/local/flutter
+
+# Add Flutter binaries to PATH
+ENV PATH="/usr/local/flutter/bin:${PATH}"
+
+# Copy the Flutter project to the container
+COPY . /app
+
+# Set the working directory to the Flutter project
+WORKDIR /app
+
+# Enable web support in Flutter
+RUN flutter config --enable-web
+
+# Install Flutter dependencies
+RUN flutter pub get
+
+# Build the Flutter web application
+RUN flutter build web
+
+# Check if the build output exists
+RUN test -d /app/build/web
+
+# Copy the build output to Apache's document root
+RUN cp -r /app/build/web/. /var/www/html/ || echo "Failed to copy build output"
+
+# Verify the copied files
+
